@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>User Management — Sign In</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<div class="stage">
+
+  <div class="brand">
+    <div class="mark">User Management</div>
+    <div class="sub">SECURE ACCESS PORTAL</div>
+  </div>
+
+  <!-- LOGIN CARD -->
+  <div class="glass-card auth-card" id="loginCard">
+    <div class="avatar-wrap">
+      <div class="avatar">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.7 0 4.9-2.2 4.9-4.9S14.7 2.2 12 2.2 7.1 4.4 7.1 7.1 9.3 12 12 12zm0 2.5c-3.6 0-10.9 1.8-10.9 5.4v2.1h21.8v-2.1c0-3.6-7.3-5.4-10.9-5.4z"/></svg>
+      </div>
+    </div>
+
+    <form id="loginForm">
+      <div class="field">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 6h18v12H3z"/><path d="M3 6l9 7 9-7"/></svg>
+        <input type="email" id="loginEmail" placeholder="Email ID" required autocomplete="email">
+      </div>
+      <div class="field">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+        <input type="password" id="loginPassword" placeholder="Password" required autocomplete="current-password">
+      </div>
+
+      <div class="row-actions">
+        <button type="submit" class="pill-btn" id="loginBtn">Login</button>
+        <button type="button" class="link-toggle" id="forgotBtn">Forgot Password?</button>
+      </div>
+
+      <div class="msg" id="loginMsg"></div>
+    </form>
+  </div>
+
+  <!-- SWITCH TO REGISTER -->
+  <div class="glass-card switch-card" id="showRegister">
+    <span>REGISTER</span>
+  </div>
+
+  <!-- REGISTER CARD (hidden by default) -->
+  <div class="glass-card auth-card hidden" id="registerCard">
+    <div class="avatar-wrap">
+      <div class="avatar">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M15 14c-2.7 0-8 1.3-8 4v2h11v-2c0-1-.4-1.8-1.1-2.5M11 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zm7 1v3m1.5-1.5h-3"/></svg>
+      </div>
+    </div>
+
+    <form id="registerForm">
+      <div class="field">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M20 21a8 8 0 0 0-16 0"/><circle cx="12" cy="7" r="4"/></svg>
+        <input type="text" id="regName" placeholder="Full Name" required autocomplete="name">
+      </div>
+      <div class="field">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 6h18v12H3z"/><path d="M3 6l9 7 9-7"/></svg>
+        <input type="email" id="regEmail" placeholder="Email ID" required autocomplete="email">
+      </div>
+      <div class="field">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+        <input type="password" id="regPassword" placeholder="Password" required autocomplete="new-password">
+      </div>
+      <div class="field">
+        <div class="field-label">Role</div>
+        <svg class="icon icon-select" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 2l8 4v6c0 5-3.5 8-8 10-4.5-2-8-5-8-10V6z"/></svg>
+        <select id="regRole" required>
+          <option value="" disabled selected>Select role</option>
+          <option value="user">User</option>
+          <option value="admin">Admin</option>
+        </select>
+      </div>
+
+      <button type="submit" class="pill-btn full" id="registerBtn">Create Account</button>
+
+      <div class="msg" id="registerMsg"></div>
+    </form>
+  </div>
+
+  <!-- SWITCH BACK TO LOGIN -->
+  <div class="glass-card switch-card hidden" id="showLogin">
+    <span>BACK TO LOGIN</span>
+  </div>
+
+</div>
+
+<script>
+  const API_BASE = "http://localhost:8000";
+
+  const loginCard = document.getElementById('loginCard');
+  const registerCard = document.getElementById('registerCard');
+  const showRegisterBtn = document.getElementById('showRegister');
+  const showLoginBtn = document.getElementById('showLogin');
+
+  showRegisterBtn.addEventListener('click', () => {
+    loginCard.classList.add('hidden');
+    showRegisterBtn.classList.add('hidden');
+    registerCard.classList.remove('hidden');
+    showLoginBtn.classList.remove('hidden');
+  });
+
+  showLoginBtn.addEventListener('click', () => {
+    registerCard.classList.add('hidden');
+    showLoginBtn.classList.add('hidden');
+    loginCard.classList.remove('hidden');
+    showRegisterBtn.classList.remove('hidden');
+  });
+
+  document.getElementById('forgotBtn').addEventListener('click', () => {
+    const msg = document.getElementById('loginMsg');
+    msg.className = 'msg error';
+    msg.textContent = 'Please contact an administrator to reset your password.';
+  });
+
+  // Redirect to dashboard if already logged in
+  if (localStorage.getItem('access_token')) {
+    window.location.href = 'dashboard.html';
+  }
+
+  // LOGIN
+  document.getElementById('loginForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const msg = document.getElementById('loginMsg');
+    const btn = document.getElementById('loginBtn');
+    msg.className = 'msg';
+    msg.textContent = '';
+
+    const email = document.getElementById('loginEmail').value.trim();
+    const password = document.getElementById('loginPassword').value;
+
+    btn.disabled = true;
+    const originalText = btn.textContent;
+    btn.textContent = 'Logging in...';
+
+    try {
+      const res = await fetch(`${API_BASE}/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        msg.className = 'msg error';
+        msg.textContent = data.detail || 'Login failed';
+        return;
+      }
+
+      localStorage.setItem('access_token', data.access_token);
+      localStorage.setItem('role', data.role);
+
+      msg.className = 'msg success';
+      msg.textContent = 'Login successful. Redirecting...';
+
+      setTimeout(() => {
+        window.location.href = 'dashboard.html';
+      }, 600);
+
+    } catch (err) {
+      msg.className = 'msg error';
+      msg.textContent = 'Could not reach the server. Is the API running?';
+    } finally {
+      btn.disabled = false;
+      btn.textContent = originalText;
+    }
+  });
+
+  // REGISTER
+  document.getElementById('registerForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const msg = document.getElementById('registerMsg');
+    const btn = document.getElementById('registerBtn');
+    msg.className = 'msg';
+    msg.textContent = '';
+
+    const name = document.getElementById('regName').value.trim();
+    const email = document.getElementById('regEmail').value.trim();
+    const password = document.getElementById('regPassword').value;
+    const role = document.getElementById('regRole').value;
+
+    if (!role) {
+      msg.className = 'msg error';
+      msg.textContent = 'Please select a role.';
+      return;
+    }
+
+    btn.disabled = true;
+    const originalText = btn.textContent;
+    btn.textContent = 'Creating account...';
+
+    try {
+      const res = await fetch(`${API_BASE}/register`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, email, password, role })
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        msg.className = 'msg error';
+        msg.textContent = data.detail || 'Registration failed';
+        return;
+      }
+
+      msg.className = 'msg success';
+      msg.textContent = 'Account created. You can now log in.';
+
+      document.getElementById('registerForm').reset();
+      setTimeout(() => {
+        showLoginBtn.click();
+      }, 1200);
+
+    } catch (err) {
+      msg.className = 'msg error';
+      msg.textContent = 'Could not reach the server. Is the API running?';
+    } finally {
+      btn.disabled = false;
+      btn.textContent = originalText;
+    }
+  });
+</script>
+
+</body>
+</html>
